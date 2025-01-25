@@ -1,6 +1,4 @@
-﻿using GitDash.Models;
-using GitDash.PageModels;
-using System.ComponentModel;
+﻿using Microsoft.Data.Sqlite;
 using System.Runtime.CompilerServices;
 
 namespace GitDash.Pages
@@ -11,7 +9,7 @@ namespace GitDash.Pages
         {
             return path;
         }
-        public MainPage(MainPageModel model, GitStatusReport gitStatusReport)
+        public MainPage(MainPageModel model, GitStatusReport gitStatusReport, VariableStorage variableStorage, VariableSubstitution variableSubstitution)
         {
             InitializeComponent();
             BindingContext = model;
@@ -39,7 +37,7 @@ namespace GitDash.Pages
 
             var editor = new Editor
             {
-                Text = gitStatusReport.FilesAsString,
+                Text = variableSubstitution.Substitute(gitStatusReport.FilesAsString, variableStorage.GetAll()),
                 FontSize = 16,
                 TextColor = Colors.Black,
                 BackgroundColor = Colors.LightGray,
@@ -68,8 +66,10 @@ namespace GitDash.Pages
                     isVarEditorOpen = true;
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
-                        await ShowVarEditPopup(selection);
+                        await ShowVarEditPopup(selection, variableStorage);
                         isVarEditorOpen = false; editor.SelectionLength = 0; selection = ""; lastCheckedSelectionLength = 0;
+                        variableStorage.GetAll();
+                        editor.Text = variableSubstitution.Substitute(gitStatusReport.FilesAsString, variableStorage.GetAll());
                     });
                 }
                 else
@@ -133,7 +133,7 @@ namespace GitDash.Pages
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
                     gitStatusReport.Refresh(thisRepoPath);
-                    editor.Text = gitStatusReport.FilesAsString;
+                    editor.Text = variableSubstitution.Substitute(gitStatusReport.FilesAsString, variableStorage.GetAll());
                     commitLabel.Text = gitStatusReport.ParentChildCommitPair[1] + " Parent(s): " + gitStatusReport.ParentChildCommitPair[0];
                     commitMessageLabel.Text = gitStatusReport.LastCommitMessageShort;
                     branchLabel.Text = gitStatusReport.CurrentBranchName;
@@ -181,7 +181,7 @@ namespace GitDash.Pages
             return string.Empty;
         }
 
-        private async Task ShowVarEditPopup(string selectedText)
+        private async Task ShowVarEditPopup(string selectedText, VariableStorage varStorage)
         {
             string varName = await DisplayPromptAsync(
                 "Add A Shortened Path Variable",
@@ -192,7 +192,7 @@ namespace GitDash.Pages
             if (string.IsNullOrWhiteSpace(varName)) return;
             if (varName.ToCharArray().Any(c => ('\t' + Environment.NewLine + " {}").Contains(c))) return;
 
-            // todo:store varName and value
+            varStorage.Add(varName, selectedText);
         }
     }
 }

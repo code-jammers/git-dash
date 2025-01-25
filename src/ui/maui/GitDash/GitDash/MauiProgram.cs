@@ -51,6 +51,8 @@ namespace GitDash
             builder.Services.AddSingleton<ProjectListPageModel>();
             builder.Services.AddSingleton<ManageMetaPageModel>();
             builder.Services.AddSingleton<GitStatusReport>();
+            builder.Services.AddSingleton<VariableStorage>();
+            builder.Services.AddSingleton<VariableSubstitution>();
 
             builder.Services.AddTransientWithShellRoute<ProjectDetailPage, ProjectDetailPageModel>("project");
             builder.Services.AddTransientWithShellRoute<TaskDetailPage, TaskDetailPageModel>("task");
