@@ -15,6 +15,7 @@ public class GitStatusReport
     public bool HasUpstreamDevelopmentBranchChanges { get; set; } = false;
     public string[] ParentChildCommitPair { get; set; } = new string[2];
     public string LastCommitMessageShort { get; set; } = "";
+    public string FilesAsStringSubstituted { get; set; } = "";
     public void Refresh(string repositoryPath)
     {
         this.FilesAsString = "";
@@ -99,5 +100,8 @@ public class GitStatusReport
                     : Environment.NewLine + "D " + fileStatus.FilePath;
             }
         }
+        FilesAsStringSubstituted = new GitDash.Services.VariableSubstitution()
+            .Substitute(FilesAsString, new GitDash.Services.VariableStorage()
+                .GetAll());
     }
 }

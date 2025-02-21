@@ -14,6 +14,7 @@ public class VariableStorage
     {
         string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         string databasePath = Path.Combine(appDataPath, "git-dash", "variables.db");
+        //Console.WriteLine(databasePath);
         if (!Directory.Exists(Path.Combine(appDataPath, "git-dash")))
         {
             Directory.CreateDirectory(Path.Combine(appDataPath, "git-dash"));
